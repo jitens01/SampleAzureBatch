@@ -18,16 +18,16 @@ namespace ClientApplication
         // These are used when constructing connection strings for the Batch and Storage client objects.
 
         // Batch account credentials
-        private const string BatchAccountName = "";
-        private const string BatchAccountKey = "";
-        private const string BatchAccountUrl = "";
+        private const string BatchAccountName = "samplebatch24oct";
+        private const string BatchAccountKey = "bBsmk9CI3QHwbxCwf6QgAitirPEsAoeW9Z2cnGGDYxA1fyOsb25Mub6g4wfBEXRCNWtMr66D2aM5koKBVMJ2nA==";
+        private const string BatchAccountUrl = "https://samplebatch24oct.westindia.batch.azure.com";
 
         // Storage account credentials
-        private const string StorageAccountName = "";
-        private const string StorageAccountKey = "";
+        private const string StorageAccountName = "samplebatch24oct";
+        private const string StorageAccountKey = "c9/f2ePMxp8OCDRQ1QCbtVOfof55Ae6Grfm1ySkLbqr15XBQdKj4Ku5DjDp9vbyZzKGjeEA9FZgZDcgj5c5L1A==";
 
-        private const string PoolId = "DotNetTutorialPool";
-        private const string JobId = "DotNetTutorialJob";
+        private const string PoolId = "SampleAzureBatchPool";
+        private const string JobId = "SampleAzureBatchJob";
 
         public static void Main(string[] args)
         {
@@ -70,6 +70,7 @@ namespace ClientApplication
             Stopwatch timer = new Stopwatch();
             timer.Start();
 
+            #region Creating Storage Containers
             // Construct the Storage account connection string
             string storageConnectionString = String.Format("DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}",
                                                             StorageAccountName, StorageAccountKey);
@@ -87,11 +88,13 @@ namespace ClientApplication
             await CreateContainerIfNotExistAsync(blobClient, appContainerName);
             await CreateContainerIfNotExistAsync(blobClient, inputContainerName);
             await CreateContainerIfNotExistAsync(blobClient, outputContainerName);
+            #endregion
 
+            #region Upload Data and Application Files
             // Paths to the executable and its dependencies that will be executed by the tasks
             List<string> applicationFilePaths = new List<string>
             {
-                // The DotNetTutorial project includes a project reference to TaskApplication, allowing us to
+                // The ClientApplication project includes a project reference to TaskApplication, allowing us to
                 // determine the path of the task application binary dynamically
                 typeof(TaskApplication.Program).Assembly.Location,
                 "Microsoft.WindowsAzure.Storage.dll"
@@ -111,7 +114,8 @@ namespace ClientApplication
 
             // Upload the data files. This is the data that will be processed by each of the tasks that are
             // executed on the compute nodes within the pool.
-            List<ResourceFile> inputFiles = await UploadFilesToContainerAsync(blobClient, inputContainerName, inputFilePaths);
+            List<ResourceFile> inputFiles = await UploadFilesToContainerAsync(blobClient, inputContainerName, inputFilePaths); 
+            #endregion
 
             // Obtain a shared access signature that provides write access to the output container to which
             // the tasks will upload their output.
@@ -171,9 +175,9 @@ namespace ClientApplication
         /// <summary>
         /// Creates a container with the specified name in Blob storage, unless a container with that name already exists.
         /// </summary>
-        /// <param name="blobClient">A <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlobClient"/>.</param>
-        /// <param name="containerName">The name for the new container.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> object that represents the asynchronous operation.</returns>
+        /// <param name="blobClient"></param>
+        /// <param name="containerName"></param>
+        /// <returns></returns>
         private static async Task CreateContainerIfNotExistAsync(CloudBlobClient blobClient, string containerName)
         {
             CloudBlobContainer container = blobClient.GetContainerReference(containerName);
@@ -217,13 +221,12 @@ namespace ClientApplication
 
         /// <summary>
         /// Uploads the specified files to the specified Blob container, returning a corresponding
-        /// collection of <see cref="ResourceFile"/> objects appropriate for assigning to a task's
-        /// <see cref="CloudTask.ResourceFiles"/> property.
+        /// collection of ResourceFile objects appropriate for assigning to a task's
         /// </summary>
-        /// <param name="blobClient">A <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlobClient"/>.</param>
+        /// <param name="blobClient">A CloudBlobClient.</param>
         /// <param name="inputContainerName">The name of the blob storage container to which the files should be uploaded.</param>
         /// <param name="filePaths">A collection of paths of the files to be uploaded to the container.</param>
-        /// <returns>A collection of <see cref="ResourceFile"/> objects.</returns>
+        /// <returns>A collection of ResourceFile objects.</returns>
         private static async Task<List<ResourceFile>> UploadFilesToContainerAsync(CloudBlobClient blobClient, string inputContainerName, List<string> filePaths)
         {
             List<ResourceFile> resourceFiles = new List<ResourceFile>();
@@ -240,9 +243,9 @@ namespace ClientApplication
         /// Uploads the specified file to the specified Blob container.
         /// </summary>
         /// <param name="filePath">The full path to the file to upload to Storage.</param>
-        /// <param name="blobClient">A <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlobClient"/>.</param>
+        /// <param name="blobClient">A CloudBlobClient.</param>
         /// <param name="containerName">The name of the blob storage container to which the file should be uploaded.</param>
-        /// <returns>A <see cref="Microsoft.Azure.Batch.ResourceFile"/> instance representing the file within blob storage.</returns>
+        /// <returns>A  ResourceFile instance representing the file within blob storage.</returns>
         private static async Task<ResourceFile> UploadFileToContainerAsync(CloudBlobClient blobClient, string containerName, string filePath)
         {
             Console.WriteLine("Uploading file {0} to container [{1}]...", filePath, containerName);
