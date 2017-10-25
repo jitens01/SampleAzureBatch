@@ -62,7 +62,7 @@ namespace ClientApplication
         /// <summary>
         /// Provides an asynchronous version of the Main method, allowing for the awaiting of async method calls within.
         /// </summary>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> object that represents the asynchronous operation.</returns>
+        /// <returns>A Task object that represents the asynchronous operation.</returns>
         private static async Task MainAsync()
         {
             Console.WriteLine("Sample start: {0}", DateTime.Now);
@@ -114,12 +114,14 @@ namespace ClientApplication
 
             // Upload the data files. This is the data that will be processed by each of the tasks that are
             // executed on the compute nodes within the pool.
-            List<ResourceFile> inputFiles = await UploadFilesToContainerAsync(blobClient, inputContainerName, inputFilePaths); 
+            List<ResourceFile> inputFiles = await UploadFilesToContainerAsync(blobClient, inputContainerName, inputFilePaths);
             #endregion
 
+            #region Retrieving Output SasUrl
             // Obtain a shared access signature that provides write access to the output container to which
             // the tasks will upload their output.
-            string outputContainerSasUrl = GetContainerSasUrl(blobClient, outputContainerName, SharedAccessBlobPermissions.Write);
+            string outputContainerSasUrl = GetContainerSasUrl(blobClient, outputContainerName, SharedAccessBlobPermissions.Write); 
+            #endregion
 
             // Create a BatchClient. We'll now be interacting with the Batch service in addition to Storage
             BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(BatchAccountUrl, BatchAccountName, BatchAccountKey);
@@ -172,6 +174,7 @@ namespace ClientApplication
             }
         }
 
+        #region Factory methods for creating Storage Container
         /// <summary>
         /// Creates a container with the specified name in Blob storage, unless a container with that name already exists.
         /// </summary>
@@ -190,12 +193,13 @@ namespace ClientApplication
             {
                 Console.WriteLine("Container [{0}] exists, skipping creation.", containerName);
             }
-        }
+        } 
+        #endregion
 
         /// <summary>
         /// Returns a shared access signature (SAS) URL providing the specified permissions to the specified container.
         /// </summary>
-        /// <param name="blobClient">A <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlobClient"/>.</param>
+        /// <param name="blobClient">A CloudBlobClient.</param>
         /// <param name="containerName">The name of the container for which a SAS URL should be obtained.</param>
         /// <param name="permissions">The permissions granted by the SAS URL.</param>
         /// <returns>A SAS URL providing the specified access to the container.</returns>
@@ -272,14 +276,14 @@ namespace ClientApplication
         }
 
         /// <summary>
-        /// Creates a <see cref="CloudPool"/> with the specified id and configures its StartTask with the
-        /// specified <see cref="ResourceFile"/> collection.
+        /// Creates a CloudPool with the specified id and configures its StartTask with the
+        /// specified ResourceFile collection.
         /// </summary>
-        /// <param name="batchClient">A <see cref="BatchClient"/>.</param>
-        /// <param name="poolId">The id of the <see cref="CloudPool"/> to create.</param>
-        /// <param name="resourceFiles">A collection of <see cref="ResourceFile"/> objects representing blobs within
+        /// <param name="batchClient">A BatchClient.</param>
+        /// <param name="poolId">The id of the CloudPool to create.</param>
+        /// <param name="resourceFiles">A collection of ResourceFile objects representing blobs within
         /// a Storage account container. The StartTask will download these files from Storage prior to execution.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> object that represents the asynchronous operation.</returns>
+        /// <returns>A Task object that represents the asynchronous operation.</returns>
         private static async Task CreatePoolIfNotExistAsync(BatchClient batchClient, string poolId, IList<ResourceFile> resourceFiles)
         {
             CloudPool pool = null;
@@ -332,10 +336,10 @@ namespace ClientApplication
         /// <summary>
         /// Creates a job in the specified pool.
         /// </summary>
-        /// <param name="batchClient">A <see cref="BatchClient"/>.</param>
+        /// <param name="batchClient">A BatchClient.</param>
         /// <param name="jobId">The id of the job to be created.</param>
-        /// <param name="poolId">The id of the <see cref="CloudPool"/> in which to create the job.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> object that represents the asynchronous operation.</returns>
+        /// <param name="poolId">The id of the CloudPool in which to create the job.</param>
+        /// <returns>A Task object that represents the asynchronous operation.</returns>
         private static async Task CreateJobAsync(BatchClient batchClient, string jobId, string poolId)
         {
             Console.WriteLine("Creating job [{0}]...", jobId);
@@ -351,9 +355,9 @@ namespace ClientApplication
         /// Creates tasks to process each of the specified input files, and submits them to the
         /// specified job for execution.
         /// </summary>
-        /// <param name="batchClient">A <see cref="BatchClient"/>.</param>
+        /// <param name="batchClient">A BatchClient.</param>
         /// <param name="jobId">The id of the job to which the tasks should be added.</param>
-        /// <param name="inputFiles">A collection of <see cref="ResourceFile"/> objects representing the input files to be
+        /// <param name="inputFiles">A collection of ResourceFile objects representing the input files to be
         /// processed by the tasks executed on the compute nodes.</param>
         /// <param name="outputContainerSasUrl">The shared access signature URL for the container within Azure Storage that
         /// will receive the output files created by the tasks.</param>
@@ -389,7 +393,7 @@ namespace ClientApplication
         /// Monitors the specified tasks for completion and returns a value indicating whether all tasks completed successfully
         /// within the timeout period.
         /// </summary>
-        /// <param name="batchClient">A <see cref="BatchClient"/>.</param>
+        /// <param name="batchClient">A BatchClient </param>
         /// <param name="jobId">The id of the job containing the tasks that should be monitored.</param>
         /// <param name="timeout">The period of time to wait for the tasks to reach the completed state.</param>
         /// <returns><c>true</c> if all tasks in the specified job completed with an exit code of 0 within the specified timeout period, otherwise <c>false</c>.</returns>
@@ -466,10 +470,10 @@ namespace ClientApplication
         /// <summary>
         /// Downloads all files from the specified blob storage container to the specified directory.
         /// </summary>
-        /// <param name="blobClient">A <see cref="CloudBlobClient"/>.</param>
+        /// <param name="blobClient">A CloudBlobClient </param>
         /// <param name="containerName">The name of the blob storage container containing the files to download.</param>
         /// <param name="directoryPath">The full path of the local directory to which the files should be downloaded.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> object that represents the asynchronous operation.</returns>
+        /// <returns>A Task object that represents the asynchronous operation.</returns>
         private static async Task DownloadBlobsFromContainerAsync(CloudBlobClient blobClient, string containerName, string directoryPath)
         {
             Console.WriteLine("Downloading all files from container [{0}]...", containerName);
@@ -494,9 +498,9 @@ namespace ClientApplication
         /// <summary>
         /// Deletes the container with the specified name from Blob storage, unless a container with that name does not exist.
         /// </summary>
-        /// <param name="blobClient">A <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlobClient"/>.</param>
+        /// <param name="blobClient">A CloudBlobClient.</param>
         /// <param name="containerName">The name of the container to delete.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task"/> object that represents the asynchronous operation.</returns>
+        /// <returns>A Task object that represents the asynchronous operation.</returns>
         private static async Task DeleteContainerAsync(CloudBlobClient blobClient, string containerName)
         {
             CloudBlobContainer container = blobClient.GetContainerReference(containerName);
@@ -512,9 +516,9 @@ namespace ClientApplication
         }
 
         /// <summary>
-        /// Processes all exceptions inside an <see cref="AggregateException"/> and writes each inner exception to the console.
+        /// Processes all exceptions inside an AggregateException and writes each inner exception to the console.
         /// </summary>
-        /// <param name="aggregateException">The <see cref="AggregateException"/> to process.</param>
+        /// <param name="aggregateException">The AggregateException to process.</param>
         public static void PrintAggregateException(AggregateException aggregateException)
         {
             // Flatten the aggregate and iterate over its inner exceptions, printing each
