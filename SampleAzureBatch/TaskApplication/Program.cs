@@ -20,6 +20,7 @@ namespace TaskApplication
     /// </remarks>
     public class Program
     {
+        #region Main
         public static void Main(string[] args)
         {
             // The first argument passed to this executable should be the path to a text file to be processed.
@@ -70,7 +71,9 @@ namespace TaskApplication
             // Upload the output file to blob container in Azure Storage
             UploadFileToContainer(outputFile, outputContainerSas);
         }
+        #endregion
 
+        #region Factory
         /// <summary>
         /// Uploads the specified file to the container represented by the specified
         /// container shared access signature (SAS).
@@ -105,6 +108,7 @@ namespace TaskApplication
                 // it properly indicates that there was a problem with the task.
                 Environment.ExitCode = -1;
             }
-        }
+        } 
+        #endregion
     }
 }

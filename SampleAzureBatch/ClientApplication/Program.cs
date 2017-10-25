@@ -17,6 +17,7 @@ namespace ClientApplication
         // Update the Batch and Storage account credential strings below with the values unique to your accounts.
         // These are used when constructing connection strings for the Batch and Storage client objects.
 
+        #region Fields
         // Batch account credentials
         private const string BatchAccountName = "samplebatch24oct";
         private const string BatchAccountKey = "bBsmk9CI3QHwbxCwf6QgAitirPEsAoeW9Z2cnGGDYxA1fyOsb25Mub6g4wfBEXRCNWtMr66D2aM5koKBVMJ2nA==";
@@ -27,8 +28,10 @@ namespace ClientApplication
         private const string StorageAccountKey = "c9/f2ePMxp8OCDRQ1QCbtVOfof55Ae6Grfm1ySkLbqr15XBQdKj4Ku5DjDp9vbyZzKGjeEA9FZgZDcgj5c5L1A==";
 
         private const string PoolId = "SampleAzureBatchPool";
-        private const string JobId = "SampleAzureBatchJob";
+        private const string JobId = "SampleAzureBatchJob"; 
+        #endregion
 
+        #region Main
         public static void Main(string[] args)
         {
             if (String.IsNullOrEmpty(BatchAccountName) || String.IsNullOrEmpty(BatchAccountKey) || String.IsNullOrEmpty(BatchAccountUrl) ||
@@ -65,10 +68,12 @@ namespace ClientApplication
         /// <returns>A Task object that represents the asynchronous operation.</returns>
         private static async Task MainAsync()
         {
+            #region Initial Setup
             Console.WriteLine("Sample start: {0}", DateTime.Now);
             Console.WriteLine();
             Stopwatch timer = new Stopwatch();
             timer.Start();
+            #endregion
 
             #region Creating Storage Containers
             // Construct the Storage account connection string
@@ -120,9 +125,10 @@ namespace ClientApplication
             #region Retrieving Output SasUrl
             // Obtain a shared access signature that provides write access to the output container to which
             // the tasks will upload their output.
-            string outputContainerSasUrl = GetContainerSasUrl(blobClient, outputContainerName, SharedAccessBlobPermissions.Write); 
+            string outputContainerSasUrl = GetContainerSasUrl(blobClient, outputContainerName, SharedAccessBlobPermissions.Write);
             #endregion
 
+            #region Managing Batch, Job and Tasks
             // Create a BatchClient. We'll now be interacting with the Batch service in addition to Storage
             BatchSharedKeyCredentials cred = new BatchSharedKeyCredentials(BatchAccountUrl, BatchAccountName, BatchAccountKey);
             using (BatchClient batchClient = BatchClient.Open(cred))
@@ -172,7 +178,9 @@ namespace ClientApplication
                     await batchClient.PoolOperations.DeletePoolAsync(PoolId);
                 }
             }
-        }
+            #endregion
+        } 
+        #endregion
 
         #region Factory methods for creating Storage Container
         /// <summary>
@@ -193,9 +201,10 @@ namespace ClientApplication
             {
                 Console.WriteLine("Container [{0}] exists, skipping creation.", containerName);
             }
-        } 
+        }
         #endregion
 
+        #region Factory method for OutputContainer's Sas Url
         /// <summary>
         /// Returns a shared access signature (SAS) URL providing the specified permissions to the specified container.
         /// </summary>
@@ -222,7 +231,9 @@ namespace ClientApplication
             // Return the URL string for the container, including the SAS token
             return String.Format("{0}{1}", container.Uri, sasContainerToken);
         }
+        #endregion
 
+        #region Factory methods for uploading files to Storage containers
         /// <summary>
         /// Uploads the specified files to the specified Blob container, returning a corresponding
         /// collection of ResourceFile objects appropriate for assigning to a task's
@@ -274,7 +285,9 @@ namespace ClientApplication
 
             return new ResourceFile(blobSasUri, blobName);
         }
+        #endregion
 
+        #region Factory method for creating Batch pool
         /// <summary>
         /// Creates a CloudPool with the specified id and configures its StartTask with the
         /// specified ResourceFile collection.
@@ -332,7 +345,9 @@ namespace ClientApplication
                 }
             }
         }
+        #endregion
 
+        #region Factory method for creating Batch Job
         /// <summary>
         /// Creates a job in the specified pool.
         /// </summary>
@@ -350,7 +365,9 @@ namespace ClientApplication
 
             await job.CommitAsync();
         }
+        #endregion
 
+        #region Factory methods for managing Tasks
         /// <summary>
         /// Creates tasks to process each of the specified input files, and submits them to the
         /// specified job for execution.
@@ -466,6 +483,28 @@ namespace ClientApplication
 
             return allTasksSuccessful;
         }
+        #endregion
+
+        #region Factory methods for deleting files and Storage containers
+        /// <summary>
+        /// Deletes the container with the specified name from Blob storage, unless a container with that name does not exist.
+        /// </summary>
+        /// <param name="blobClient">A CloudBlobClient.</param>
+        /// <param name="containerName">The name of the container to delete.</param>
+        /// <returns>A Task object that represents the asynchronous operation.</returns>
+        private static async Task DeleteContainerAsync(CloudBlobClient blobClient, string containerName)
+        {
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+
+            if (await container.DeleteIfExistsAsync())
+            {
+                Console.WriteLine("Container [{0}] deleted.", containerName);
+            }
+            else
+            {
+                Console.WriteLine("Container [{0}] does not exist, skipping deletion.", containerName);
+            }
+        }
 
         /// <summary>
         /// Downloads all files from the specified blob storage container to the specified directory.
@@ -494,27 +533,9 @@ namespace ClientApplication
 
             Console.WriteLine("All files downloaded to {0}", directoryPath);
         }
+        #endregion
 
-        /// <summary>
-        /// Deletes the container with the specified name from Blob storage, unless a container with that name does not exist.
-        /// </summary>
-        /// <param name="blobClient">A CloudBlobClient.</param>
-        /// <param name="containerName">The name of the container to delete.</param>
-        /// <returns>A Task object that represents the asynchronous operation.</returns>
-        private static async Task DeleteContainerAsync(CloudBlobClient blobClient, string containerName)
-        {
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
-
-            if (await container.DeleteIfExistsAsync())
-            {
-                Console.WriteLine("Container [{0}] deleted.", containerName);
-            }
-            else
-            {
-                Console.WriteLine("Container [{0}] does not exist, skipping deletion.", containerName);
-            }
-        }
-
+        #region Util method
         /// <summary>
         /// Processes all exceptions inside an AggregateException and writes each inner exception to the console.
         /// </summary>
@@ -527,6 +548,7 @@ namespace ClientApplication
                 Console.WriteLine(exception.ToString());
                 Console.WriteLine();
             }
-        }
+        } 
+        #endregion
     }
 }
