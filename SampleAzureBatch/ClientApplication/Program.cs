@@ -9,6 +9,8 @@ using Microsoft.Azure.Batch.Common;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using TaskApplication;
+using System.Data.SqlClient;
+using System.Text;
 
 namespace ClientApplication
 {
@@ -71,6 +73,9 @@ namespace ClientApplication
             #region Initial Setup
             Console.WriteLine("Sample start: {0}", DateTime.Now);
             Console.WriteLine();
+
+            // InsertIntoDatabase("Batch started at : " + DateTime.Now);
+
             Stopwatch timer = new Stopwatch();
             timer.Start();
             #endregion
@@ -161,6 +166,8 @@ namespace ClientApplication
                 Console.WriteLine();
                 Console.WriteLine("Sample end: {0}", DateTime.Now);
                 Console.WriteLine("Elapsed time: {0}", timer.Elapsed);
+
+                // InsertIntoDatabase("Batch ended at : " + DateTime.Now);
 
                 // Clean up Batch resources (if the user so chooses)
                 Console.WriteLine();
@@ -548,7 +555,48 @@ namespace ClientApplication
                 Console.WriteLine(exception.ToString());
                 Console.WriteLine();
             }
-        } 
+        }
+
+        public static void InsertIntoDatabase(string value)
+        {
+            try
+            {
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder.DataSource = "samplesqldb26octserver..database.windows.net";
+                builder.UserID = "Jitendra";
+                builder.Password = "ciitdc#123";
+                builder.InitialCatalog = "sampleSqlDB26Oct";
+
+                string connectionString = "Server=tcp:samplesqldb26octserver.database.windows.net,1433;Initial Catalog=sampleSqlDB26Oct;Persist Security Info=False;User ID=Jitendra;Password=ciitdc#123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    Console.WriteLine("\nQuery data example:");
+                    Console.WriteLine("=========================================\n");
+
+                    connection.Open();
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("Insert into dbo.Sample1");
+                    sb.Append(" Values ('" + value + "')");
+                    String sql = sb.ToString();
+
+                    using (SqlCommand command = new SqlCommand(sql, connection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
         #endregion
     }
 }
