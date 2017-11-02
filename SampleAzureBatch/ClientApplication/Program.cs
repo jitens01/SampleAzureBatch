@@ -16,9 +16,6 @@ namespace ClientApplication
 {
     public class Program
     {
-        // Update the Batch and Storage account credential strings below with the values unique to your accounts.
-        // These are used when constructing connection strings for the Batch and Storage client objects.
-
         #region Fields
         // Batch account credentials
         private const string BatchAccountName = "samplebatch24oct";
@@ -74,7 +71,7 @@ namespace ClientApplication
             Console.WriteLine("Sample start: {0}", DateTime.Now);
             Console.WriteLine();
 
-            // InsertIntoDatabase("Batch started at : " + DateTime.Now);
+            InsertIntoDatabase("Batch started at : " + DateTime.Now);
 
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -107,6 +104,7 @@ namespace ClientApplication
                 // The ClientApplication project includes a project reference to TaskApplication, allowing us to
                 // determine the path of the task application binary dynamically
                 typeof(TaskApplication.Program).Assembly.Location,
+                "ABCD.dll",
                 "Microsoft.WindowsAzure.Storage.dll"
             };
 
@@ -157,9 +155,9 @@ namespace ClientApplication
                 await DownloadBlobsFromContainerAsync(blobClient, outputContainerName, Environment.GetEnvironmentVariable("TEMP"));
 
                 // Clean up Storage resources
-                await DeleteContainerAsync(blobClient, appContainerName);
-                await DeleteContainerAsync(blobClient, inputContainerName);
-                await DeleteContainerAsync(blobClient, outputContainerName);
+                //await DeleteContainerAsync(blobClient, appContainerName);
+                //await DeleteContainerAsync(blobClient, inputContainerName);
+                //await DeleteContainerAsync(blobClient, outputContainerName);
 
                 // Print out some timing info
                 timer.Stop();
@@ -167,7 +165,7 @@ namespace ClientApplication
                 Console.WriteLine("Sample end: {0}", DateTime.Now);
                 Console.WriteLine("Elapsed time: {0}", timer.Elapsed);
 
-                // InsertIntoDatabase("Batch ended at : " + DateTime.Now);
+                InsertIntoDatabase("Batch ended at : " + DateTime.Now);
 
                 // Clean up Batch resources (if the user so chooses)
                 Console.WriteLine();
@@ -178,12 +176,12 @@ namespace ClientApplication
                     await batchClient.JobOperations.DeleteJobAsync(JobId);
                 }
 
-                Console.Write("Delete pool? [yes] no: ");
-                response = Console.ReadLine().ToLower();
-                if (response != "n" && response != "no")
-                {
-                    await batchClient.PoolOperations.DeletePoolAsync(PoolId);
-                }
+                //Console.Write("Delete pool? [yes] no: ");
+                //response = Console.ReadLine().ToLower();
+                //if (response != "n" && response != "no")
+                //{
+                //    await batchClient.PoolOperations.DeletePoolAsync(PoolId);
+                //}
             }
             #endregion
         } 
@@ -561,13 +559,7 @@ namespace ClientApplication
         {
             try
             {
-                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-                builder.DataSource = "samplesqldb26octserver..database.windows.net";
-                builder.UserID = "Jitendra";
-                builder.Password = "ciitdc#123";
-                builder.InitialCatalog = "sampleSqlDB26Oct";
-
-                string connectionString = "Server=tcp:samplesqldb26octserver.database.windows.net,1433;Initial Catalog=sampleSqlDB26Oct;Persist Security Info=False;User ID=Jitendra;Password=ciitdc#123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+                string connectionString = "Data Source=metademo.japaneast.cloudapp.azure.com; Initial Catalog=DIVA; Integrated Security=False;User ID=metadbadmin;Password=MetaCiitdc#2017;";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
