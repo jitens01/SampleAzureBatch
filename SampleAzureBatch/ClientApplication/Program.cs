@@ -104,7 +104,6 @@ namespace ClientApplication
                 // The ClientApplication project includes a project reference to TaskApplication, allowing us to
                 // determine the path of the task application binary dynamically
                 typeof(TaskApplication.Program).Assembly.Location,
-                "ABCD.dll",
                 "Microsoft.WindowsAzure.Storage.dll"
             };
 
